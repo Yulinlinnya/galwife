@@ -1,0 +1,2 @@
+# galwife
+koishi-plugin-galwife
