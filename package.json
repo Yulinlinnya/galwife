@@ -1,0 +1,29 @@
+{
+  "name": "koishi-plugin-galwife",
+  "description": "一个本地抽老婆插件，开箱即用。",
+  "version": "0.1.3",
+  "contributors": [
+    "Yulinlin <1825635930@qq.com>"
+  ],
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/Yulinlinnya/galwife",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yulinlinnya/galwife.git"
+  },
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.13.2"
+  }
+}
