@@ -11,15 +11,19 @@ export const usage = `
 
 # <center>不是妹妹追不起🤡 而是二次元更有性价比🤤</center>
 
-高级功能使用例：图片目录填入：./wife   ——读取koishi根目录下的wife文件夹（win将斜杠改成反斜杠）。
+# <center>开箱即用，傻瓜配置，立即右上角启用插件😋</center>
 
-图片JSON填入：./namae.json   ——读取koishi根目录下的namae.json文件（win将斜杠改成反斜杠）。
+高级功能使用例：图片目录填入：./wives   ——读取koishi根目录下的wives文件夹（win将斜杠改成反斜杠）。
+
+图片JSON填入：./wife.json   ——读取koishi根目录下的wife.json文件（win将斜杠改成反斜杠）。
 
 导入的JSON格式为：{"key1": ["value1","value2","value3"],"key2": ["value4","value5","value6"]}
 
 ——其中key为出处，value为角色名。图片文件名需与角色名相对应。
 
-（概率是按1/key*1/value计算的，想以1/value计算什么的以后再想办法解决吧）
+放个zbp的wife仓库，你应该懂我意思吧~~（改改json就能丢进去用了）
+
+<a>https://github.com/FloatTech/zbpwife/tree/b92443d3d4337613528ce073a1250f02201c0777</a>
 
 （自定义库是总开关，只有开启路径才有效。不是bug，只是因为菜不会写罢了，不影响使用）
 `
@@ -27,6 +31,7 @@ export const usage = `
 export interface Config {
   标明出处: boolean;
   随机祝福: boolean;
+  概率计算: boolean;
   输出模式: boolean;
   每日轮换: boolean;
   自定义库: boolean;
@@ -38,7 +43,8 @@ export const Config: Schema<Config> = Schema.intersect([
   Schema.object({
     标明出处: Schema.boolean().default(false).description('※传播造成不良后果，那种事不要啊(;´༎ຶД༎ຶ`)'),
     随机祝福: Schema.boolean().default(true).description('※随机一句祝福语句，开宴席能带咱吗(╹ڡ╹ )'),
-    输出模式: Schema.boolean().default(false).description('※开启为图文混合，关闭为分开发送。很实用呢（＾∀＾●）ﾉｼ'),
+    概率计算: Schema.boolean().default(false).description('※开启为按游戏数量计，关闭为按老婆数量计，很方便呢（。＾▽＾）'),
+    输出模式: Schema.boolean().default(true).description('※开启为图文混合，关闭为分开发送。很实用呢（＾∀＾●）ﾉｼ'),
   }).description('普通功能'),
   Schema.object({
     每日轮换: Schema.boolean().default(true).description('※记录每日与她的邂逅(✿◠‿◠)'),
@@ -105,7 +111,7 @@ export async function apply(ctx: Context, config: Config) {
       const files = fs.readdirSync(config.图片目录, 'utf8');
       // 遍历文件列表，找到目标文件
       const targetFile = files.find(file => file.startsWith(random_name));
-        // 获取文件的绝对路径
+      // 获取文件的绝对路径
       const Path = 'file://' + path.resolve(config.图片目录, targetFile);
       console.log("读取到图像文件："+ path.resolve(config.图片目录, targetFile));
       return Path;
@@ -114,10 +120,26 @@ export async function apply(ctx: Context, config: Config) {
 
   const wife_name = getnamejson();
 
+  function getrandom() {
+    if (config.概率计算) {
+      //先随机游戏再随机角色
+      let random_game = Object.keys(wife_name)[Math.floor(Math.random() * Object.keys(wife_name).length)];
+      let random_name = wife_name[random_game][Math.floor(Math.random() * wife_name[random_game].length)];
+      return [random_game,random_name]
+    }
+    else{
+      // 随机选择一个 name
+      const values = Object.values(wife_name).flat();
+      const random_name = values[Math.floor(Math.random() * values.length)];
+      // 根据 name 找到对应的 game
+      const random_game = Object.keys(wife_name).filter(key => wife_name[key].includes(random_name));
+      return [random_game,random_name]
+    }
+  }
+
   ctx.command('galwife','娶二次元老婆').alias('/galwife').action(async ({ session }) => {
     //随机老婆
-    let random_game = Object.keys(wife_name)[Math.floor(Math.random() * Object.keys(wife_name).length)];
-    let random_name = wife_name[random_game][Math.floor(Math.random() * wife_name[random_game].length)];
+    let [random_game,random_name] = getrandom();
     let game_string = "「" + random_game + "」の";
     let game_name = config.标明出处 ? game_string : "";
     //随机祝福
